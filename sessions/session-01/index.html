@@ -3,27 +3,370 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Session 01 — Inside one artificial neuron · Hardware for AI</title>
+  <title>Session 01 — Inside One Artificial Neuron · Hardware for AI</title>
   <link rel="icon" href="../../assets/img/ieee-guc-logo.png">
   <link rel="stylesheet" href="../../assets/css/theme.css">
 </head>
 <body>
   <header class="topbar">
     <img src="../../assets/img/ieee-guc-logo.png" alt="IEEE GUC Student Branch">
-    <div class="brand">Hardware for AI<small>Session 01</small></div>
-    <nav><a href="../../">All sessions</a></nav>
+    <div class="brand">Hardware for AI<small>Session 01 · Interactive Lab</small></div>
+    <nav>
+      <a href="#sim-datapath">1. Neuron Datapath</a>
+      <a href="#sim-geometry">2. Decision Line &amp; XOR</a>
+      <a href="#sim-bitwidth">3. Hardware Budget</a>
+      <a href="../../">&larr; All sessions</a>
+    </nav>
   </header>
 
   <main>
     <section class="hero">
-      <div class="eyebrow">Session 01</div>
+      <div class="eyebrow">Session 01 · Autonomous Drone Obstacle Detector</div>
       <h1>Inside one artificial neuron</h1>
-      <p>A drone has to decide, many times a second, whether the thing ahead is an obstacle. We'll build that decision from a single neuron.</p>
+      <p>An autonomous quadcopter reads onboard range and velocity sensors every millisecond and decides whether to hold course or trigger an evasive climb. Strip away the buzzwords: that decision is a dot product, a bias shift, and a non-linear gate.</p>
     </section>
 
-    <section class="block">
-      <h2>Simulations</h2>
-      <p class="lede muted">Coming soon: the neuron datapath and operation counter, and the decision-line explorer.</p>
+    <!-- ==================== SIMULATION 1: LIVE NEURON DATAPATH ==================== -->
+    <section class="block" id="sim-datapath">
+      <div class="eyebrow">Simulation 01 · Numerical Inference</div>
+      <h2>The Single-Neuron Datapath: <span class="mono">y&#770; = f(w<sup>T</sup>x + b)</span></h2>
+      <p class="lede">Tune the drone's three live sensor readings <span class="mono">x<sub>i</sub></span>, the learned weights <span class="mono">w<sub>i</sub></span>, and the bias <span class="mono">b</span>. Watch each multiply-accumulate stage and compare how <strong>ReLU</strong>, <strong>Sigmoid</strong>, and <strong>Step</strong> behave in math and in silicon.</p>
+
+      <div class="preset-bar" id="dp-presets">
+        <button type="button" data-preset="corridor" class="active">Preset 1: Clear Corridor</button>
+        <button type="button" data-preset="pillar">Preset 2: Fast Approaching Pillar</button>
+        <button type="button" data-preset="wall">Preset 3: Close Static Wall</button>
+        <button type="button" data-preset="ghost">Preset 4: Receding Target (Safe)</button>
+      </div>
+
+      <div class="sim-grid">
+        <!-- Left column: Sliders -->
+        <div>
+          <div class="panel-box">
+            <h3>Drone Sensor Inputs (x)</h3>
+            <div class="control">
+              <label for="x1">x<sub>1</sub> Proximity</label>
+              <input id="x1" type="range" min="0" max="10" step="0.1" value="2.0">
+              <output id="x1-val">2.0</output>
+            </div>
+            <div class="control">
+              <label for="x2">x<sub>2</sub> Closing Vel</label>
+              <input id="x2" type="range" min="-5" max="10" step="0.1" value="1.0">
+              <output id="x2-val">1.0</output>
+            </div>
+            <div class="control">
+              <label for="x3">x<sub>3</sub> Sonar Width</label>
+              <input id="x3" type="range" min="0" max="10" step="0.1" value="1.5">
+              <output id="x3-val">1.5</output>
+            </div>
+          </div>
+
+          <div class="panel-box" style="margin-top: 20px;">
+            <h3>Frozen Weights (w) &amp; Bias (b)</h3>
+            <div class="control">
+              <label for="w1">w<sub>1</sub> (Proximity)</label>
+              <input id="w1" type="range" min="-3" max="3" step="0.1" value="1.2">
+              <output id="w1-val">1.2</output>
+            </div>
+            <div class="control">
+              <label for="w2">w<sub>2</sub> (Velocity)</label>
+              <input id="w2" type="range" min="-3" max="3" step="0.1" value="0.8">
+              <output id="w2-val">0.8</output>
+            </div>
+            <div class="control">
+              <label for="w3">w<sub>3</sub> (Sonar)</label>
+              <input id="w3" type="range" min="-3" max="3" step="0.1" value="0.4">
+              <output id="w3-val">0.4</output>
+            </div>
+            <div class="control">
+              <label for="b">Bias b</label>
+              <input id="b" type="range" min="-15" max="15" step="0.5" value="-6.0">
+              <output id="b-val">-6.0</output>
+            </div>
+          </div>
+
+          <div class="panel-box" style="margin-top: 20px;">
+            <h3>Activation Gate f(z)</h3>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="act-btn active" data-act="sigmoid">Sigmoid</button>
+              <button type="button" class="act-btn" data-act="relu">ReLU</button>
+              <button type="button" class="act-btn" data-act="step">Step</button>
+            </div>
+            <p id="act-hw-note" class="muted" style="font-size:13px; margin:10px 0 0;">
+              <strong>Hardware cost:</strong> Requires <span class="mono">e<sup>-z</sup></span> and division — typically approximated in FPGA/ASIC via a lookup table (LUT) or piecewise-linear segments.
+            </p>
+          </div>
+        </div>
+
+        <!-- Right column: Live Datapath SVG + Readouts -->
+        <div>
+          <div class="svg-wrap">
+            <svg id="datapath-svg" viewBox="0 0 660 270" width="100%" height="auto" aria-label="Single neuron hardware datapath">
+              <!-- Wires from inputs to multipliers -->
+              <line x1="95" y1="45" x2="175" y2="45" stroke="#111827" stroke-width="1.8"/>
+              <line x1="95" y1="125" x2="175" y2="125" stroke="#111827" stroke-width="1.8"/>
+              <line x1="95" y1="205" x2="175" y2="205" stroke="#111827" stroke-width="1.8"/>
+
+              <!-- Wires from multipliers to adder tree -->
+              <path d="M 235 45 L 340 45 L 365 105" fill="none" stroke="#003C93" stroke-width="2"/>
+              <line x1="235" y1="125" x2="355" y2="125" stroke="#003C93" stroke-width="2"/>
+              <path d="M 235 205 L 340 205 L 365 145" fill="none" stroke="#003C93" stroke-width="2"/>
+              <!-- Bias wire -->
+              <line x1="385" y1="235" x2="385" y2="157" stroke="#64748B" stroke-width="1.8" stroke-dasharray="4 3"/>
+
+              <!-- Wire z to activation -->
+              <line x1="417" y1="125" x2="495" y2="125" stroke="#111827" stroke-width="2.2"/>
+              <!-- Wire y_hat out -->
+              <line x1="565" y1="125" x2="635" y2="125" stroke="#003C93" stroke-width="2.5"/>
+
+              <!-- Input boxes -->
+              <g font-family="ui-monospace, monospace" font-size="12">
+                <rect x="12" y="22" width="83" height="46" fill="#fff" stroke="#111827" stroke-width="1.5"/>
+                <text x="20" y="40" fill="#64748B">x1</text>
+                <text x="88" y="40" text-anchor="end" font-weight="700" id="svg-x1">2.0</text>
+                <text x="20" y="58" fill="#003C93">w1</text>
+                <text x="88" y="58" text-anchor="end" font-weight="700" fill="#003C93" id="svg-w1">1.2</text>
+
+                <rect x="12" y="102" width="83" height="46" fill="#fff" stroke="#111827" stroke-width="1.5"/>
+                <text x="20" y="120" fill="#64748B">x2</text>
+                <text x="88" y="120" text-anchor="end" font-weight="700" id="svg-x2">1.0</text>
+                <text x="20" y="138" fill="#003C93">w2</text>
+                <text x="88" y="138" text-anchor="end" font-weight="700" fill="#003C93" id="svg-w2">0.8</text>
+
+                <rect x="12" y="182" width="83" height="46" fill="#fff" stroke="#111827" stroke-width="1.5"/>
+                <text x="20" y="200" fill="#64748B">x3</text>
+                <text x="88" y="200" text-anchor="end" font-weight="700" id="svg-x3">1.5</text>
+                <text x="20" y="218" fill="#003C93">w3</text>
+                <text x="88" y="218" text-anchor="end" font-weight="700" fill="#003C93" id="svg-w3">0.4</text>
+              </g>
+
+              <!-- 3 Multiplier nodes -->
+              <g font-family="ui-monospace, monospace">
+                <circle cx="205" cy="45" r="26" fill="#fff" stroke="#003C93" stroke-width="2"/>
+                <text x="205" y="41" text-anchor="middle" font-size="11" fill="#64748B">MUL 1</text>
+                <text x="205" y="56" text-anchor="middle" font-size="12.5" font-weight="700" id="svg-p1">+2.40</text>
+
+                <circle cx="205" cy="125" r="26" fill="#fff" stroke="#003C93" stroke-width="2"/>
+                <text x="205" y="121" text-anchor="middle" font-size="11" fill="#64748B">MUL 2</text>
+                <text x="205" y="136" text-anchor="middle" font-size="12.5" font-weight="700" id="svg-p2">+0.80</text>
+
+                <circle cx="205" cy="205" r="26" fill="#fff" stroke="#003C93" stroke-width="2"/>
+                <text x="205" y="201" text-anchor="middle" font-size="11" fill="#64748B">MUL 3</text>
+                <text x="205" y="216" text-anchor="middle" font-size="12.5" font-weight="700" id="svg-p3">+0.60</text>
+              </g>
+
+              <!-- Accumulator / Adder node -->
+              <g font-family="ui-monospace, monospace">
+                <circle cx="385" cy="125" r="32" fill="#E8EEF8" stroke="#003C93" stroke-width="2.2"/>
+                <text x="385" y="118" text-anchor="middle" font-size="11" fill="#003C93" font-weight="700">&Sigma; + b</text>
+                <text x="385" y="136" text-anchor="middle" font-size="13" font-weight="700" id="svg-z">-2.20</text>
+
+                <rect x="345" y="232" width="80" height="26" fill="#fff" stroke="#64748B" stroke-width="1.4"/>
+                <text x="385" y="249" text-anchor="middle" font-size="12" id="svg-b">b = -6.0</text>
+              </g>
+
+              <!-- Activation gate box -->
+              <g font-family="ui-monospace, monospace">
+                <rect x="495" y="91" width="70" height="68" fill="#111827" stroke="#111827" stroke-width="2"/>
+                <text x="530" y="115" text-anchor="middle" font-size="11" fill="#94A3B8" id="svg-act-name">SIGMOID</text>
+                <text x="530" y="138" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF" id="svg-yhat">0.100</text>
+              </g>
+
+              <!-- Labels -->
+              <text x="456" y="116" text-anchor="middle" font-family="ui-monospace, monospace" font-size="12" fill="#64748B">z</text>
+              <text x="605" y="116" text-anchor="middle" font-family="ui-monospace, monospace" font-size="12" fill="#003C93" font-weight="700">y&#770;</text>
+            </svg>
+          </div>
+
+          <div class="stat-strip">
+            <div class="stat-cell">
+              <span class="label">Dot Product w<sup>T</sup>x</span>
+              <span class="val" id="stat-dot">+3.80</span>
+              <span class="sub">3 multiplications</span>
+            </div>
+            <div class="stat-cell">
+              <span class="label">Pre-Activation z</span>
+              <span class="val" id="stat-z">-2.20</span>
+              <span class="sub">w<sup>T</sup>x + b (3 adds)</span>
+            </div>
+            <div class="stat-cell">
+              <span class="label">Output y&#770; = f(z)</span>
+              <span class="val" id="stat-yhat">0.100</span>
+              <span class="sub" id="stat-slope">Local slope f'(z) = 0.090</span>
+            </div>
+            <div class="stat-cell">
+              <span class="label">Ops / Inference</span>
+              <span class="val">3 MUL · 3 ADD</span>
+              <span class="sub">3 MAC operations</span>
+            </div>
+          </div>
+
+          <div id="drone-verdict" class="verdict-banner">
+            <span id="verdict-text">CLEAR CORRIDOR — Hold altitude and speed (z &lt; 0)</span>
+            <span class="mono" id="verdict-math">z = -2.20 &rarr; y&#770; = 0.100</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SIMULATION 2: 2D DECISION BOUNDARY & XOR ==================== -->
+    <section class="block" id="sim-geometry">
+      <div class="eyebrow">Simulation 02 · Geometry, Learning &amp; The XOR Wall</div>
+      <h2>Where <span class="mono">z = 0</span> Lives: The Decision Boundary</h2>
+      <p class="lede">With two sensor inputs (<span class="mono">x<sub>1</sub></span> proximity, <span class="mono">x<sub>2</sub></span> closing speed), the equation <span class="mono">w<sub>1</sub>x<sub>1</sub> + w<sub>2</sub>x<sub>2</sub> + b = 0</span> carves a straight line across sensor space. Watch how the weight vector <span class="mono">w</span> always points perpendicular to the boundary—and why a single line fails on the <strong>XOR trap</strong>.</p>
+
+      <div class="preset-bar">
+        <button type="button" id="ds-drone" class="active">Dataset A: Drone Obstacle Telemetry (Linearly Separable)</button>
+        <button type="button" id="ds-xor">Dataset B: Dual-Beam Cross-Fire (XOR Trap — Impossible for 1 Neuron)</button>
+      </div>
+
+      <div class="sim-grid">
+        <div>
+          <div class="panel-box">
+            <h3>Boundary Controls (w<sub>1</sub>x<sub>1</sub> + w<sub>2</sub>x<sub>2</sub> + b = 0)</h3>
+            <div class="control">
+              <label for="gw1">Weight w<sub>1</sub></label>
+              <input id="gw1" type="range" min="-4" max="4" step="0.05" value="1.0">
+              <output id="gw1-val">1.00</output>
+            </div>
+            <div class="control">
+              <label for="gw2">Weight w<sub>2</sub></label>
+              <input id="gw2" type="range" min="-4" max="4" step="0.05" value="0.8">
+              <output id="gw2-val">0.80</output>
+            </div>
+            <div class="control">
+              <label for="gb">Bias b</label>
+              <input id="gb" type="range" min="-12" max="12" step="0.1" value="-6.5">
+              <output id="gb-val">-6.50</output>
+            </div>
+          </div>
+
+          <div class="panel-box" style="margin-top:20px;">
+            <h3>Training Loop vs. Frozen Inference</h3>
+            <p class="muted" style="font-size:13px; margin:0 0 10px;">
+              During <strong>training</strong>, we measure the Binary Cross-Entropy (BCE) loss across all flight logs and nudge <span class="mono">w, b</span> opposite the gradient. During <strong>inference</strong> on the drone, the loop is gone.
+            </p>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+              <button type="button" id="btn-step" class="primary">1 Gradient Step (BCE)</button>
+              <button type="button" id="btn-train25">Run 25 Epochs</button>
+              <button type="button" id="btn-scramble">Scramble w, b</button>
+            </div>
+          </div>
+
+          <div class="panel-box" style="margin-top:20px;">
+            <h3>Geometric Readout</h3>
+            <table class="hw-table">
+              <tbody>
+                <tr>
+                  <th>Boundary Slope</th>
+                  <td class="mono" id="geo-slope">-1.25</td>
+                </tr>
+                <tr>
+                  <th>Origin Distance |b|/||w||</th>
+                  <td class="mono" id="geo-dist">5.08 units</td>
+                </tr>
+                <tr>
+                  <th>Points Classified Right</th>
+                  <td class="mono" id="geo-acc">12 / 12 (100%)</td>
+                </tr>
+                <tr>
+                  <th>Average BCE Cost J<sub>BCE</sub></th>
+                  <td class="mono" id="geo-loss">0.142</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <div class="canvas-wrap">
+            <canvas id="geo-canvas" width="640" height="420" style="width:100%; height:auto; display:block;"></canvas>
+          </div>
+          <p class="muted" style="font-size:13px; margin:8px 0 0;">
+            <strong>Legend:</strong> Hollow blue circles (<span class="mono">y = 0</span>) = Clear corridor. Solid red triangles (<span class="mono">y = 1</span>) = Obstacle (Evade). Solid black line = decision boundary <span class="mono">z = 0</span>; arrow from line = normal vector <span class="mono">w = [w<sub>1</sub>, w<sub>2</sub>]<sup>T</sup></span> pointing into the <span class="mono">z &gt; 0</span> half-plane.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SIMULATION 3: FIXED-POINT HARDWARE BIT-WIDTH BUDGET ==================== -->
+    <section class="block" id="sim-bitwidth">
+      <div class="eyebrow">Simulation 03 · From Python Floats to Silicon Wires</div>
+      <h2>Fixed-Point Accumulator &amp; Datapath Architect</h2>
+      <p class="lede">On a desktop CPU, every number hides inside a 64-bit floating-point unit. On an FPGA or custom chip, you choose the exact wire width for every signal so the accumulator never overflows.</p>
+
+      <div class="sim-grid">
+        <div>
+          <div class="panel-box">
+            <h3>Datapath Parameters</h3>
+            <div class="control">
+              <label for="hw-n">Inputs N</label>
+              <input id="hw-n" type="range" min="2" max="64" step="1" value="9">
+              <output id="hw-n-val">9</output>
+            </div>
+            <div class="control">
+              <label for="hw-xbits">Input Bits (Unsigned)</label>
+              <input id="hw-xbits" type="range" min="4" max="16" step="1" value="8">
+              <output id="hw-xbits-val">8</output>
+            </div>
+            <div class="control">
+              <label for="hw-wbits">Weight Bits (Signed)</label>
+              <input id="hw-wbits" type="range" min="4" max="16" step="1" value="8">
+              <output id="hw-wbits-val">8</output>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="stat-strip" style="margin-top:0;">
+            <div class="stat-cell">
+              <span class="label">Single Product Width</span>
+              <span class="val" id="bw-prod">16 bits</span>
+              <span class="sub" id="bw-prod-range">[-32,640 .. +32,385]</span>
+            </div>
+            <div class="stat-cell">
+              <span class="label">Guard Bits &lceil;log<sub>2</sub>N&rceil;</span>
+              <span class="val" id="bw-guard">+4 bits</span>
+              <span class="sub" id="bw-guard-sub">Sum of 9 products</span>
+            </div>
+            <div class="stat-cell">
+              <span class="label">Safe Accumulator</span>
+              <span class="val" id="bw-acc">20 bits</span>
+              <span class="sub">Zero overflow guaranteed</span>
+            </div>
+            <div class="stat-cell">
+              <span class="label">ReLU Gate Hardware</span>
+              <span class="val">1-Bit MUX</span>
+              <span class="sub">Check MSB sign bit only</span>
+            </div>
+          </div>
+
+          <table class="hw-table">
+            <thead>
+              <tr>
+                <th>Architecture Choice</th>
+                <th>Multipliers Built</th>
+                <th>Clock Cycles / Output</th>
+                <th>Hardware Tradeoff</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Architecture A — Sequential MAC</strong></td>
+                <td class="mono">1 Multiplier</td>
+                <td class="mono" id="arch-seq-cycles">9 cycles</td>
+                <td>Minimal silicon area; requires accumulator register &amp; cycle counter FSM.</td>
+              </tr>
+              <tr>
+                <td><strong>Architecture B — Fully Parallel Tree</strong></td>
+                <td class="mono" id="arch-par-muls">9 Multipliers</td>
+                <td class="mono">1 cycle</td>
+                <td>Maximum throughput (1 result/clock); costs <span class="mono" id="arch-par-cost">9&times;</span> multiplier area.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -31,5 +374,7 @@
     <span>IEEE GUC Student Branch &middot; Hardware for AI</span>
     <a href="../../">&larr; All sessions</a>
   </footer>
+
+  <script src="app.js"></script>
 </body>
 </html>
