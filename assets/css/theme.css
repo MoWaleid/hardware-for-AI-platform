@@ -1,0 +1,90 @@
+/* IEEE GUC Hardware for AI — shared platform theme
+   Palette from the IEEE GUC Student Branch logo. Restrained, flat, no gradients. */
+:root {
+  --blue: #003C93;
+  --blue-soft: #E8EEF8;
+  --ink: #111827;
+  --muted: #64748B;
+  --line: #E2E8F0;
+  --bg: #FFFFFF;
+  --pos: #003C93;   /* z > 0 side */
+  --neg: #B4232A;   /* z < 0 side */
+  --mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  --sans: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--sans);
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--blue); }
+
+/* ---------- Top bar ---------- */
+.topbar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 6vw;
+  border-bottom: 1px solid var(--line);
+}
+.topbar img { height: 36px; width: auto; }
+.topbar .brand { font-weight: 700; letter-spacing: .2px; }
+.topbar .brand small { display: block; font-weight: 500; color: var(--muted); font-size: 12px; letter-spacing: .6px; text-transform: uppercase; }
+.topbar nav { margin-left: auto; font-size: 14px; }
+.topbar nav a { text-decoration: none; margin-left: 18px; color: var(--ink); }
+.topbar nav a:hover { color: var(--blue); }
+
+/* ---------- Layout ---------- */
+main { max-width: 1120px; margin: 0 auto; padding: 40px 6vw 80px; }
+.hero { padding: 24px 0 36px; border-bottom: 1px solid var(--line); margin-bottom: 36px; }
+.hero h1 { font-size: clamp(32px, 5vw, 52px); line-height: 1.08; margin: 0 0 12px; letter-spacing: -0.5px; }
+.hero p { font-size: 18px; color: var(--muted); max-width: 640px; margin: 0; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--blue); margin-bottom: 10px; }
+
+h2 { font-size: 24px; margin: 0 0 6px; letter-spacing: -0.2px; }
+h3 { font-size: 16px; margin: 0 0 6px; }
+.lede { color: var(--muted); margin: 0 0 20px; max-width: 720px; }
+
+/* ---------- Session list (hairline rows, not cards) ---------- */
+.sessions { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
+.sessions li { display: grid; grid-template-columns: 64px 1fr auto; align-items: baseline; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.sessions .num { font-family: var(--mono); color: var(--muted); font-size: 14px; }
+.sessions .title { font-weight: 600; }
+.sessions .desc { color: var(--muted); font-size: 14px; margin-top: 2px; }
+.sessions .state { font-size: 13px; color: var(--muted); }
+.sessions li.live .num { color: var(--blue); font-weight: 700; }
+.sessions li.live a.title { text-decoration: none; color: var(--ink); }
+.sessions li.live a.title:hover { color: var(--blue); }
+.sessions li.locked .title { color: #A0AEC0; font-weight: 500; }
+
+/* ---------- Panels / sections ---------- */
+section.block { padding: 32px 0; border-bottom: 1px solid var(--line); }
+section.block:last-of-type { border-bottom: none; }
+
+.footer { border-top: 1px solid var(--line); padding: 20px 6vw; color: var(--muted); font-size: 13px; display: flex; justify-content: space-between; }
+
+/* ---------- Form controls ---------- */
+.control { display: grid; grid-template-columns: 120px 1fr 64px; align-items: center; gap: 12px; margin: 8px 0; font-size: 14px; }
+.control label { color: var(--ink); }
+.control output { font-family: var(--mono); text-align: right; }
+input[type="range"] { width: 100%; accent-color: var(--blue); }
+button, select {
+  font: inherit; font-size: 14px;
+  border: 1px solid var(--ink); background: #fff; color: var(--ink);
+  padding: 7px 14px; border-radius: 4px; cursor: pointer;
+}
+button.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+button:hover, select:hover { border-color: var(--blue); }
+
+.mono { font-family: var(--mono); }
+.muted { color: var(--muted); }
+
+@media (max-width: 720px) {
+  .sessions li { grid-template-columns: 44px 1fr; }
+  .sessions .state { grid-column: 2; }
+  .topbar nav { display: none; }
+}
