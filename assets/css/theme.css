@@ -1,5 +1,9 @@
 /* IEEE GUC Hardware for AI — shared platform theme
    Palette from the IEEE GUC Student Branch logo. Restrained, flat, no gradients. */
+@view-transition {
+  navigation: auto;
+}
+
 :root {
   --blue: #003C93;
   --blue-soft: #E8EEF8;
@@ -14,8 +18,15 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
+html {
+  margin: 0;
+  padding: 0;
+  scroll-behavior: smooth;
+  scroll-padding-top: 84px;
+}
 body {
+  margin: 0;
+  padding: 0;
   font-family: var(--sans);
   color: var(--ink);
   background: var(--bg);
@@ -23,59 +34,107 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-a { color: var(--blue); }
+@keyframes pageFadeIn {
+  from { opacity: 0.95; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sectionFlash {
+  0%   { background-color: rgba(0, 60, 147, 0.07); }
+  100% { background-color: transparent; }
+}
+
+.section-flash {
+  animation: sectionFlash 0.9s ease-out;
+}
+
+a { color: var(--blue); transition: color 0.18s ease; }
 
 /* ---------- Top bar ---------- */
 .topbar {
-  display: flex; align-items: center; gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 14px;
   padding: 14px 6vw;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line);
 }
 .topbar img { height: 36px; width: auto; }
 .topbar .brand { font-weight: 700; letter-spacing: .2px; }
 .topbar .brand small { display: block; font-weight: 500; color: var(--muted); font-size: 12px; letter-spacing: .6px; text-transform: uppercase; }
-.topbar nav { margin-left: auto; font-size: 14px; }
-.topbar nav a { text-decoration: none; margin-left: 18px; color: var(--ink); }
-.topbar nav a:hover { color: var(--blue); }
+.topbar nav { margin-left: auto; font-size: 14px; display: flex; align-items: center; gap: 18px; }
+.topbar nav a { text-decoration: none; color: var(--ink); font-weight: 500; padding: 4px 2px; border-bottom: 2px solid transparent; transition: color 0.18s ease, border-color 0.18s ease; }
+.topbar nav a:hover { color: var(--blue); border-bottom-color: var(--blue); }
 
 /* ---------- Layout ---------- */
-main { max-width: 1120px; margin: 0 auto; padding: 40px 6vw 80px; }
+main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px 6vw 96px;
+  animation: pageFadeIn 0.28s ease-out;
+}
 .hero { padding: 24px 0 36px; border-bottom: 1px solid var(--line); margin-bottom: 36px; }
 .hero h1 { font-size: clamp(32px, 5vw, 52px); line-height: 1.08; margin: 0 0 12px; letter-spacing: -0.5px; }
-.hero p { font-size: 18px; color: var(--muted); max-width: 640px; margin: 0; }
+.hero p { font-size: 18px; color: var(--muted); max-width: 680px; margin: 0; }
 .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--blue); margin-bottom: 10px; }
 
 h2 { font-size: 24px; margin: 0 0 6px; letter-spacing: -0.2px; }
 h3 { font-size: 16px; margin: 0 0 6px; }
-.lede { color: var(--muted); margin: 0 0 20px; max-width: 720px; }
+.lede { color: var(--muted); margin: 0 0 20px; max-width: 760px; }
 
-/* ---------- Session list (hairline rows, not cards) ---------- */
+/* ---------- Session list (hairline rows, entire row clickable when live) ---------- */
 .sessions { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
-.sessions li { display: grid; grid-template-columns: 64px 1fr auto; align-items: baseline; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.sessions li { border-bottom: 1px solid var(--line); padding: 0; margin: 0; }
+.sessions .row {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  align-items: baseline;
+  gap: 16px;
+  padding: 18px 12px;
+  margin: 0 -12px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.18s ease, transform 0.18s ease;
+}
 .sessions .num { font-family: var(--mono); color: var(--muted); font-size: 14px; }
-.sessions .title { font-weight: 600; }
+.sessions .title { font-weight: 600; transition: color 0.18s ease; }
 .sessions .desc { color: var(--muted); font-size: 14px; margin-top: 2px; }
-.sessions .state { font-size: 13px; color: var(--muted); }
+.sessions .state { font-size: 13px; color: var(--muted); display: inline-block; transition: transform 0.18s ease, color 0.18s ease; }
 .sessions li.live .num { color: var(--blue); font-weight: 700; }
-.sessions li.live a.title { text-decoration: none; color: var(--ink); }
-.sessions li.live a.title:hover { color: var(--blue); }
+.sessions li.live .title { color: var(--ink); }
+.sessions li.live .state { color: var(--blue); font-weight: 600; }
+.sessions li.live a.row:hover {
+  background-color: var(--blue-soft);
+}
+.sessions li.live a.row:hover .title {
+  color: var(--blue);
+}
+.sessions li.live a.row:hover .state {
+  transform: translateX(4px);
+}
 .sessions li.locked .title { color: #A0AEC0; font-weight: 500; }
 
 /* ---------- Panels / sections ---------- */
-section.block { padding: 32px 0; border-bottom: 1px solid var(--line); }
+section.block { padding: 40px 0; border-bottom: 1px solid var(--line); }
 section.block:last-of-type { border-bottom: none; }
 
-.footer { border-top: 1px solid var(--line); padding: 20px 6vw; color: var(--muted); font-size: 13px; display: flex; justify-content: space-between; }
+.footer { border-top: 1px solid var(--line); padding: 24px 6vw; color: var(--muted); font-size: 13px; display: flex; justify-content: space-between; }
 
 /* ---------- Form controls ---------- */
-.control { display: grid; grid-template-columns: 120px 1fr 64px; align-items: center; gap: 12px; margin: 8px 0; font-size: 14px; }
+.control { display: grid; grid-template-columns: 128px 1fr 64px; align-items: center; gap: 12px; margin: 8px 0; font-size: 14px; }
 .control label { color: var(--ink); }
 .control output { font-family: var(--mono); text-align: right; }
-input[type="range"] { width: 100%; accent-color: var(--blue); }
+input[type="range"] { width: 100%; accent-color: var(--blue); cursor: pointer; }
 button, select {
   font: inherit; font-size: 14px;
   border: 1px solid var(--ink); background: #fff; color: var(--ink);
   padding: 7px 14px; border-radius: 4px; cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 button.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
 button:hover, select:hover { border-color: var(--blue); }
@@ -109,7 +168,7 @@ button:hover, select:hover { border-color: var(--blue); }
   margin-bottom: 18px;
 }
 .preset-bar button {
-  padding: 5px 11px;
+  padding: 6px 12px;
   font-size: 13px;
 }
 button.active, .preset-bar button.active {
@@ -182,6 +241,7 @@ button.active, .preset-bar button.active {
   text-align: left;
   padding: 8px 10px;
   border-bottom: 1px solid var(--line);
+  vertical-align: top;
 }
 .hw-table th {
   font-size: 11px;
@@ -189,13 +249,20 @@ button.active, .preset-bar button.active {
   letter-spacing: 0.7px;
   color: var(--muted);
 }
+.node-clickable {
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.node-clickable:hover {
+  opacity: 0.85;
+}
 
 @media (max-width: 860px) {
   .sim-grid { grid-template-columns: 1fr; }
   .stat-strip { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 720px) {
-  .sessions li { grid-template-columns: 44px 1fr; }
+  .sessions .row { grid-template-columns: 44px 1fr; }
   .sessions .state { grid-column: 2; }
-  .topbar nav { display: none; }
+  .topbar nav { gap: 12px; font-size: 13px; }
 }
