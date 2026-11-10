@@ -12,38 +12,138 @@
     <img src="../../assets/img/ieee-guc-logo.png" alt="IEEE GUC Student Branch">
     <div class="brand">Hardware for AI<small>Session 01 · Interactive Lab</small></div>
     <nav>
-      <a href="#sim-network">1. Network &amp; Forward Pass</a>
-      <a href="#sim-collapse">2. Activations &amp; Collapse</a>
-      <a href="#sim-xor">3. XOR &amp; Hidden Layers</a>
-      <a href="#sim-learning">4. Learning &amp; Backprop</a>
+      <a href="#sim-network">1. Forward Pass</a>
+      <a href="#sim-collapse">2. Activations</a>
+      <a href="#sim-xor">3. XOR Boundary</a>
+      <a href="#sim-learning">4. Backprop</a>
       <a href="../../">&larr; All sessions</a>
     </nav>
   </header>
 
   <main>
     <section class="hero">
-      <div class="eyebrow">Session 01 · Top-Down Interactive Walkthrough</div>
+      <div class="eyebrow">Session 01 · Interactive Lab</div>
       <h1>How a neural network computes and learns</h1>
-      <p>Start from the big picture: a network of connected circle nodes passing numbers forward layer by layer. Then zoom inside a single neuron, see why non-linear activation functions stop an entire network from collapsing into one line, solve the XOR puzzle, and trace how backpropagation learns weights.</p>
+      <p>Click nodes, drag sliders below each graph, and watch numbers flow and learn in real time.</p>
     </section>
 
     <!-- ==================== SIMULATION 1: NEURAL NETWORK GRAPH & FORWARD PASS ==================== -->
     <section class="block" id="sim-network">
-      <div class="eyebrow">Simulation 01 · The Big Picture &amp; The Forward Pass</div>
-      <h2>Inside a Neural Network: Nodes, Connections &amp; Layer-by-Layer Flow</h2>
-      <p class="lede">A neural network is built from layers of <strong>neurons (circle nodes)</strong> connected by weighted wires. Numbers enter the <strong>Input Layer</strong>, flow forward through the <strong>Hidden Layer</strong>, and produce a prediction at the <strong>Output Layer</strong>. Click any neuron circle (<span class="mono">h<sub>1</sub></span>, <span class="mono">h<sub>2</sub></span>, or <span class="mono">y&#770;</span>) to inspect its internal math <span class="mono">z = &Sigma; w<sub>i</sub>x<sub>i</sub> + b</span> and <span class="mono">a = f(z)</span>.</p>
+      <div class="eyebrow">Simulation 01 · The Forward Pass</div>
+      <h2>Layers, Nodes &amp; Weighted Connections</h2>
+      <p class="lede">Click any neuron (<span class="mono">h<sub>1</sub></span>, <span class="mono">h<sub>2</sub></span>, or <span class="mono">y&#770;</span>) to inspect <span class="mono">z = &Sigma; w<sub>i</sub>x<sub>i</sub> + b</span> and <span class="mono">a = f(z)</span>.</p>
 
       <div class="preset-bar" id="net-presets">
-        <button type="button" data-preset="balanced" class="active">Preset 1: Balanced Forward Pass</button>
-        <button type="button" data-preset="inhibit">Preset 2: Opposing Weights (Inhibition)</button>
-        <button type="button" data-preset="xornet">Preset 3: XOR-Solving Network</button>
+        <button type="button" data-preset="balanced" class="active">Preset 1: Balanced</button>
+        <button type="button" data-preset="inhibit">Preset 2: Opposing Weights</button>
+        <button type="button" data-preset="xornet">Preset 3: XOR Network</button>
       </div>
 
-      <div class="sim-grid">
-        <!-- Left column: Controls -->
-        <div>
+      <div class="sim-stack">
+        <!-- Large Graph First -->
+        <div class="svg-wrap">
+          <svg id="network-svg" viewBox="0 0 920 390" width="100%" height="auto" aria-label="Multi-layer neural network graph">
+            <!-- Layer Column Headers -->
+            <g font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#64748B" text-anchor="middle">
+              <text x="130" y="28">INPUT LAYER (2)</text>
+              <text x="460" y="28">HIDDEN LAYER (2)</text>
+              <text x="790" y="28">OUTPUT LAYER (1)</text>
+            </g>
+
+            <!-- Connections: Input -> Hidden -->
+            <line id="edge-x1-h1" x1="178" y1="125" x2="410" y2="115" stroke="#003C93" stroke-width="3.2"/>
+            <line id="edge-x2-h1" x1="178" y1="295" x2="410" y2="115" stroke="#003C93" stroke-width="2.5"/>
+            <line id="edge-x1-h2" x1="178" y1="125" x2="410" y2="305" stroke="#B4232A" stroke-width="2.5"/>
+            <line id="edge-x2-h2" x1="178" y1="295" x2="410" y2="305" stroke="#003C93" stroke-width="3.2"/>
+
+            <!-- Connections: Hidden -> Output -->
+            <line id="edge-h1-out" x1="510" y1="115" x2="738" y2="210" stroke="#003C93" stroke-width="3.2"/>
+            <line id="edge-h2-out" x1="510" y1="305" x2="738" y2="210" stroke="#003C93" stroke-width="3.2"/>
+
+            <!-- Edge Weight Badges -->
+            <g font-family="ui-monospace, monospace" font-size="13" font-weight="700" text-anchor="middle">
+              <rect x="255" y="92" width="76" height="24" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+              <text x="293" y="109" fill="#111827" id="lbl-edge-w11">w=1.0</text>
+
+              <rect x="220" y="162" width="76" height="24" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+              <text x="258" y="179" fill="#111827" id="lbl-edge-w12">w=0.5</text>
+
+              <rect x="220" y="232" width="76" height="24" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+              <text x="258" y="249" fill="#111827" id="lbl-edge-w21">w=-0.5</text>
+
+              <rect x="255" y="294" width="76" height="24" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+              <text x="293" y="311" fill="#111827" id="lbl-edge-w22">w=1.0</text>
+
+              <rect x="586" y="132" width="76" height="24" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+              <text x="624" y="149" fill="#111827" id="lbl-edge-v1">w=1.2</text>
+
+              <rect x="586" y="252" width="76" height="24" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+              <text x="624" y="269" fill="#111827" id="lbl-edge-v2">w=0.8</text>
+            </g>
+
+            <!-- Input Layer Circle Nodes -->
+            <g font-family="ui-monospace, monospace" text-anchor="middle">
+              <circle cx="130" cy="125" r="46" fill="#FFFFFF" stroke="#111827" stroke-width="2.6"/>
+              <text x="130" y="114" font-size="14" fill="#64748B" font-weight="700">x1</text>
+              <text x="130" y="138" font-size="18" fill="#111827" font-weight="700" id="svg-net-x1">1.00</text>
+
+              <circle cx="130" cy="295" r="46" fill="#FFFFFF" stroke="#111827" stroke-width="2.6"/>
+              <text x="130" y="284" font-size="14" fill="#64748B" font-weight="700">x2</text>
+              <text x="130" y="308" font-size="18" fill="#111827" font-weight="700" id="svg-net-x2">2.00</text>
+            </g>
+
+            <!-- Hidden Layer Circle Nodes (Clickable) -->
+            <g id="node-h1" class="node-clickable" font-family="ui-monospace, monospace" text-anchor="middle">
+              <circle id="circle-h1" cx="460" cy="115" r="50" fill="#E8EEF8" stroke="#003C93" stroke-width="3.6"/>
+              <text x="460" y="97" font-size="13" fill="#003C93" font-weight="700">h1 = f(z1)</text>
+              <text x="460" y="122" font-size="19" fill="#111827" font-weight="700" id="svg-net-h1">1.50</text>
+              <text x="460" y="143" font-size="12.5" fill="#64748B" id="svg-net-z1">z1=+1.5</text>
+            </g>
+
+            <g id="node-h2" class="node-clickable" font-family="ui-monospace, monospace" text-anchor="middle">
+              <circle id="circle-h2" cx="460" cy="305" r="50" fill="#FFFFFF" stroke="#003C93" stroke-width="2.5"/>
+              <text x="460" y="287" font-size="13" fill="#003C93" font-weight="700">h2 = f(z2)</text>
+              <text x="460" y="312" font-size="19" fill="#111827" font-weight="700" id="svg-net-h2">1.70</text>
+              <text x="460" y="333" font-size="12.5" fill="#64748B" id="svg-net-z2">z2=+1.7</text>
+            </g>
+
+            <!-- Output Layer Circle Node (Clickable) -->
+            <g id="node-out" class="node-clickable" font-family="ui-monospace, monospace" text-anchor="middle">
+              <circle id="circle-out" cx="790" cy="210" r="54" fill="#111827" stroke="#003C93" stroke-width="3.0"/>
+              <text x="790" y="191" font-size="13" fill="#94A3B8" font-weight="700">OUTPUT y&#770;</text>
+              <text x="790" y="218" font-size="20" fill="#FFFFFF" font-weight="700" id="svg-net-out">0.946</text>
+              <text x="790" y="240" font-size="12.5" fill="#CBD5E1" id="svg-net-zout">z=+2.86</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="stat-strip">
+          <div class="stat-cell">
+            <span class="label" id="insp-title">Selected: Hidden h<sub>1</sub></span>
+            <span class="val" id="insp-formula" style="font-size:17px;">z = w<sub>11</sub>x<sub>1</sub> + w<sub>12</sub>x<sub>2</sub> + b<sub>1</sub></span>
+            <span class="sub" id="insp-sub">Weighted sum</span>
+          </div>
+          <div class="stat-cell">
+            <span class="label">Products (w&middot;x)</span>
+            <span class="val" id="insp-prods" style="font-size:18px;">+1.00, +1.00</span>
+            <span class="sub">2 multiplies</span>
+          </div>
+          <div class="stat-cell">
+            <span class="label">Pre-Activation z</span>
+            <span class="val" id="insp-z">+1.50</span>
+            <span class="sub" id="insp-bias-note">Bias b = -0.5</span>
+          </div>
+          <div class="stat-cell">
+            <span class="label">Output a = f(z)</span>
+            <span class="val" id="insp-a">1.500</span>
+            <span class="sub" id="insp-act-note">ReLU gate</span>
+          </div>
+        </div>
+
+        <!-- Sliders Below Graph -->
+        <div class="controls-deck">
           <div class="panel-box">
-            <h3>1. Network Inputs (Input Layer)</h3>
+            <h3>1. Input Layer (x<sub>1</sub>, x<sub>2</sub>)</h3>
             <div class="control">
               <label for="net-x1">Input x<sub>1</sub></label>
               <input id="net-x1" type="range" min="-2" max="4" step="0.1" value="1.0">
@@ -54,11 +154,17 @@
               <input id="net-x2" type="range" min="-2" max="4" step="0.1" value="2.0">
               <output id="net-x2-val">2.0</output>
             </div>
+            <h3 style="margin-top: 20px;">2. Hidden Activation f(z)</h3>
+            <div style="display:flex; gap:10px;">
+              <button type="button" class="net-act-btn active" data-act="relu">ReLU</button>
+              <button type="button" class="net-act-btn" data-act="sigmoid">Sigmoid</button>
+              <button type="button" class="net-act-btn" data-act="step">Step</button>
+            </div>
           </div>
 
-          <div class="panel-box" style="margin-top: 20px;">
-            <h3>2. Inspect &amp; Tune Selected Neuron</h3>
-            <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <div class="panel-box">
+            <h3>3. Tune Selected Neuron Weights</h3>
+            <div style="display:flex; gap:10px; margin-bottom:14px;">
               <button type="button" class="node-select-btn active" data-node="h1">Hidden h<sub>1</sub></button>
               <button type="button" class="node-select-btn" data-node="h2">Hidden h<sub>2</sub></button>
               <button type="button" class="node-select-btn" data-node="out">Output y&#770;</button>
@@ -79,144 +185,54 @@
               <output id="net-b-val">-0.5</output>
             </div>
           </div>
-
-          <div class="panel-box" style="margin-top: 20px;">
-            <h3>3. Hidden Layer Activation f(z)</h3>
-            <div style="display:flex; gap:8px;">
-              <button type="button" class="net-act-btn active" data-act="relu">ReLU</button>
-              <button type="button" class="net-act-btn" data-act="sigmoid">Sigmoid</button>
-              <button type="button" class="net-act-btn" data-act="step">Step</button>
-            </div>
-            <p class="muted" style="font-size:13px; margin:10px 0 0;">
-              Blue wires carry positive weights (<span class="mono">w &gt; 0</span>); red wires carry negative weights (<span class="mono">w &lt; 0</span>).
-            </p>
-          </div>
-        </div>
-
-        <!-- Right column: Network Graph SVG + Selected Neuron Inspector -->
-        <div>
-          <div class="svg-wrap">
-            <svg id="network-svg" viewBox="0 0 680 310" width="100%" height="auto" aria-label="Multi-layer neural network graph">
-              <!-- Layer Column Headers -->
-              <g font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#64748B" text-anchor="middle">
-                <text x="95" y="24">INPUT LAYER (2)</text>
-                <text x="340" y="24">HIDDEN LAYER (2)</text>
-                <text x="585" y="24">OUTPUT LAYER (1)</text>
-              </g>
-
-              <!-- Connections: Input -> Hidden -->
-              <line id="edge-x1-h1" x1="133" y1="105" x2="302" y2="95" stroke="#003C93" stroke-width="2.5"/>
-              <line id="edge-x2-h1" x1="133" y1="225" x2="302" y2="95" stroke="#003C93" stroke-width="2.0"/>
-              <line id="edge-x1-h2" x1="133" y1="105" x2="302" y2="235" stroke="#B4232A" stroke-width="2.0"/>
-              <line id="edge-x2-h2" x1="133" y1="225" x2="302" y2="235" stroke="#003C93" stroke-width="2.5"/>
-
-              <!-- Connections: Hidden -> Output -->
-              <line id="edge-h1-out" x1="378" y1="95" x2="547" y2="165" stroke="#003C93" stroke-width="2.5"/>
-              <line id="edge-h2-out" x1="378" y1="235" x2="547" y2="165" stroke="#003C93" stroke-width="2.5"/>
-
-              <!-- Edge Weight Badges -->
-              <g font-family="ui-monospace, monospace" font-size="11" text-anchor="middle">
-                <rect x="188" y="78" width="58" height="18" rx="3" fill="#FFFFFF" stroke="#CBD5E1"/>
-                <text x="217" y="91" fill="#111827" id="lbl-edge-w11">w=1.0</text>
-
-                <rect x="164" y="130" width="58" height="18" rx="3" fill="#FFFFFF" stroke="#CBD5E1"/>
-                <text x="193" y="143" fill="#111827" id="lbl-edge-w12">w=0.5</text>
-
-                <rect x="164" y="186" width="58" height="18" rx="3" fill="#FFFFFF" stroke="#CBD5E1"/>
-                <text x="193" y="199" fill="#111827" id="lbl-edge-w21">w=-0.5</text>
-
-                <rect x="188" y="232" width="58" height="18" rx="3" fill="#FFFFFF" stroke="#CBD5E1"/>
-                <text x="217" y="245" fill="#111827" id="lbl-edge-w22">w=1.0</text>
-
-                <rect x="434" y="110" width="58" height="18" rx="3" fill="#FFFFFF" stroke="#CBD5E1"/>
-                <text x="463" y="123" fill="#111827" id="lbl-edge-v1">w=1.2</text>
-
-                <rect x="434" y="200" width="58" height="18" rx="3" fill="#FFFFFF" stroke="#CBD5E1"/>
-                <text x="463" y="213" fill="#111827" id="lbl-edge-v2">w=0.8</text>
-              </g>
-
-              <!-- Input Layer Circle Nodes -->
-              <g font-family="ui-monospace, monospace" text-anchor="middle">
-                <circle cx="95" cy="105" r="36" fill="#FFFFFF" stroke="#111827" stroke-width="2.2"/>
-                <text x="95" y="98" font-size="12" fill="#64748B" font-weight="700">x1</text>
-                <text x="95" y="118" font-size="14" fill="#111827" font-weight="700" id="svg-net-x1">1.00</text>
-
-                <circle cx="95" cy="225" r="36" fill="#FFFFFF" stroke="#111827" stroke-width="2.2"/>
-                <text x="95" y="218" font-size="12" fill="#64748B" font-weight="700">x2</text>
-                <text x="95" y="238" font-size="14" fill="#111827" font-weight="700" id="svg-net-x2">2.00</text>
-              </g>
-
-              <!-- Hidden Layer Circle Nodes (Clickable) -->
-              <g id="node-h1" class="node-clickable" font-family="ui-monospace, monospace" text-anchor="middle">
-                <circle id="circle-h1" cx="340" cy="95" r="38" fill="#E8EEF8" stroke="#003C93" stroke-width="3.2"/>
-                <text x="340" y="84" font-size="11" fill="#003C93" font-weight="700">h1 = f(z1)</text>
-                <text x="340" y="104" font-size="14" fill="#111827" font-weight="700" id="svg-net-h1">1.50</text>
-                <text x="340" y="119" font-size="10" fill="#64748B" id="svg-net-z1">z1=+1.5</text>
-              </g>
-
-              <g id="node-h2" class="node-clickable" font-family="ui-monospace, monospace" text-anchor="middle">
-                <circle id="circle-h2" cx="340" cy="235" r="38" fill="#FFFFFF" stroke="#003C93" stroke-width="2.2"/>
-                <text x="340" y="224" font-size="11" fill="#003C93" font-weight="700">h2 = f(z2)</text>
-                <text x="340" y="244" font-size="14" fill="#111827" font-weight="700" id="svg-net-h2">1.70</text>
-                <text x="340" y="259" font-size="10" fill="#64748B" id="svg-net-z2">z2=+1.7</text>
-              </g>
-
-              <!-- Output Layer Circle Node (Clickable) -->
-              <g id="node-out" class="node-clickable" font-family="ui-monospace, monospace" text-anchor="middle">
-                <circle id="circle-out" cx="585" cy="165" r="40" fill="#111827" stroke="#003C93" stroke-width="2.5"/>
-                <text x="585" y="153" font-size="11" fill="#94A3B8" font-weight="700">OUTPUT y&#770;</text>
-                <text x="585" y="174" font-size="15" fill="#FFFFFF" font-weight="700" id="svg-net-out">0.946</text>
-                <text x="585" y="190" font-size="10" fill="#CBD5E1" id="svg-net-zout">z=+2.86</text>
-              </g>
-            </svg>
-          </div>
-
-          <div class="stat-strip">
-            <div class="stat-cell">
-              <span class="label" id="insp-title">Selected: Hidden h<sub>1</sub></span>
-              <span class="val" id="insp-formula" style="font-size:15px;">z = w<sub>11</sub>x<sub>1</sub> + w<sub>12</sub>x<sub>2</sub> + b<sub>1</sub></span>
-              <span class="sub" id="insp-sub">Weighted sum inside neuron</span>
-            </div>
-            <div class="stat-cell">
-              <span class="label">Multiply Step</span>
-              <span class="val" id="insp-prods" style="font-size:15px;">+1.00, +1.00</span>
-              <span class="sub">2 input-weight products</span>
-            </div>
-            <div class="stat-cell">
-              <span class="label">Pre-Activation z</span>
-              <span class="val" id="insp-z">+1.50</span>
-              <span class="sub" id="insp-bias-note">Includes bias b = -0.5</span>
-            </div>
-            <div class="stat-cell">
-              <span class="label">Neuron Output a = f(z)</span>
-              <span class="val" id="insp-a">1.500</span>
-              <span class="sub" id="insp-act-note">After ReLU gate</span>
-            </div>
-          </div>
-
-          <div id="net-verdict" class="verdict-banner">
-            <span id="net-verdict-text">Forward Pass Complete: Input [1.0, 2.0] &rarr; Hidden [1.50, 1.70] &rarr; Output y&#770; = 0.946</span>
-            <span class="mono" id="net-verdict-math">6 multiplies &middot; 6 adds</span>
-          </div>
         </div>
       </div>
     </section>
 
     <!-- ==================== SIMULATION 2: ACTIVATION FUNCTIONS & LINEAR COLLAPSE ==================== -->
     <section class="block" id="sim-collapse">
-      <div class="eyebrow">Simulation 02 · Why Activation Functions Exist</div>
-      <h2>Activation Functions &amp; The Linear Collapse Proof</h2>
-      <p class="lede">Why do we put an activation function <span class="mono">f(z)</span> inside every neuron? Stack two neurons in a chain: <span class="mono">x &rarr; Neuron 1 &rarr; f(z<sub>1</sub>) &rarr; Neuron 2 &rarr; y</span>. Toggle between <strong>No Activation (Linear)</strong> and non-linear gates (<strong>ReLU</strong>, <strong>Sigmoid</strong>, <strong>Step</strong>) to see why a multi-layer network without activations collapses into a single straight-line neuron.</p>
+      <div class="eyebrow">Simulation 02 · Activation Functions</div>
+      <h2>Why Networks Collapse Without Activations</h2>
+      <p class="lede">Chain two neurons: <span class="mono">x &rarr; Neuron 1 &rarr; f(z<sub>1</sub>) &rarr; Neuron 2 &rarr; y</span>. Without a non-linear <span class="mono">f(z)</span>, both layers collapse into one straight line.</p>
 
       <div class="preset-bar" id="col-act-bar">
-        <button type="button" class="col-act-btn active" data-colact="linear">No Activation: f(z) = z (Linear Collapse!)</button>
-        <button type="button" class="col-act-btn" data-colact="relu">ReLU: f(z) = max(0, z) (Bends the Line)</button>
-        <button type="button" class="col-act-btn" data-colact="sigmoid">Sigmoid: f(z) = 1 / (1 + e<sup>-z</sup>)</button>
-        <button type="button" class="col-act-btn" data-colact="step">Step: f(z) = 1 if z &ge; 0 else 0</button>
+        <button type="button" class="col-act-btn active" data-colact="linear">Linear: f(z) = z (Collapses!)</button>
+        <button type="button" class="col-act-btn" data-colact="relu">ReLU: max(0, z)</button>
+        <button type="button" class="col-act-btn" data-colact="sigmoid">Sigmoid: 1 / (1 + e<sup>-z</sup>)</button>
+        <button type="button" class="col-act-btn" data-colact="step">Step: 0 or 1</button>
       </div>
 
-      <div class="sim-grid">
-        <div>
+      <div class="sim-stack">
+        <!-- Large Graph First -->
+        <div class="canvas-wrap">
+          <canvas id="collapse-canvas" width="960" height="460" style="width:100%; height:auto; display:block;"></canvas>
+        </div>
+
+        <div class="stat-strip">
+          <div class="stat-cell">
+            <span class="label">Activation Gate</span>
+            <span class="val" id="col-stat-gate" style="font-size:18px;">Linear f(z)=z</span>
+            <span class="sub" id="col-stat-deriv">Slope = 1</span>
+          </div>
+          <div class="stat-cell">
+            <span class="label">Effective Layers</span>
+            <span class="val" id="col-stat-layers" style="font-size:18px;">Collapses to 1!</span>
+            <span class="sub" id="col-stat-weff">w_eff = -1.80, b_eff = +2.00</span>
+          </div>
+          <div class="stat-cell">
+            <span class="label">Output Curve</span>
+            <span class="val" id="col-stat-shape" style="font-size:18px;">Straight Line</span>
+            <span class="sub" id="col-proof-text">y = (w2·w1)x + (w2·b1 + b2)</span>
+          </div>
+          <div class="stat-cell">
+            <span class="label">Deep Net Impact</span>
+            <span class="val" id="col-stat-deep" style="font-size:18px;">100 Layers = 1</span>
+            <span class="sub">W2 · W1 = W_eff</span>
+          </div>
+        </div>
+
+        <!-- Sliders Below Graph -->
+        <div class="controls-deck">
           <div class="panel-box">
             <h3>Layer 1 Neuron: z<sub>1</sub> = w<sub>1</sub>x + b<sub>1</sub></h3>
             <div class="control">
@@ -231,7 +247,7 @@
             </div>
           </div>
 
-          <div class="panel-box" style="margin-top:20px;">
+          <div class="panel-box">
             <h3>Layer 2 Neuron: y = w<sub>2</sub>&middot;f(z<sub>1</sub>) + b<sub>2</sub></h3>
             <div class="control">
               <label for="col-w2">Weight w<sub>2</sub></label>
@@ -244,68 +260,57 @@
               <output id="col-b2-val">0.8</output>
             </div>
           </div>
-
-          <div class="panel-box" style="margin-top:20px;">
-            <h3>Algebraic Proof</h3>
-            <p id="col-proof-text" class="muted" style="font-size:13.5px; margin:0;">
-              Without an activation function, <span class="mono">y = w<sub>2</sub>(w<sub>1</sub>x + b<sub>1</sub>) + b<sub>2</sub> = (w<sub>2</sub>w<sub>1</sub>)x + (w<sub>2</sub>b<sub>1</sub> + b<sub>2</sub>)</span>. Both layers merge into <strong>one single neuron</strong> with <span class="mono">w<sub>eff</sub> = -1.80</span> and <span class="mono">b<sub>eff</sub> = +2.00</span>!
-            </p>
-          </div>
-        </div>
-
-        <div>
-          <div class="canvas-wrap">
-            <canvas id="collapse-canvas" width="640" height="360" style="width:100%; height:auto; display:block;"></canvas>
-          </div>
-          <div class="stat-strip">
-            <div class="stat-cell">
-              <span class="label">Activation Gate</span>
-              <span class="val" id="col-stat-gate" style="font-size:16px;">Linear f(z)=z</span>
-              <span class="sub" id="col-stat-deriv">Slope f'(z) = 1 everywhere</span>
-            </div>
-            <div class="stat-cell">
-              <span class="label">Effective Layers</span>
-              <span class="val" id="col-stat-layers" style="font-size:16px;">Collapses to 1!</span>
-              <span class="sub" id="col-stat-weff">w_eff = -1.80, b_eff = +2.00</span>
-            </div>
-            <div class="stat-cell">
-              <span class="label">Curve Shape</span>
-              <span class="val" id="col-stat-shape" style="font-size:16px;">Straight Line</span>
-              <span class="sub">Cannot solve non-linear tasks</span>
-            </div>
-            <div class="stat-cell">
-              <span class="label">Deep Net Impact</span>
-              <span class="val" id="col-stat-deep" style="font-size:16px;">100 Layers = 1</span>
-              <span class="sub">Matrix product W2*W1 = W_eff</span>
-            </div>
-          </div>
         </div>
       </div>
     </section>
 
     <!-- ==================== SIMULATION 3: 2D DECISION BOUNDARY & THE XOR PROBLEM ==================== -->
     <section class="block" id="sim-xor">
-      <div class="eyebrow">Simulation 03 · Single-Neuron Geometry vs. Multi-Layer Networks</div>
-      <h2>The Decision Boundary &amp; Why One Neuron Fails on XOR</h2>
-      <p class="lede">With two inputs (<span class="mono">x<sub>1</sub>, x<sub>2</sub></span>), a single neuron sets <span class="mono">w<sub>1</sub>x<sub>1</sub> + w<sub>2</sub>x<sub>2</sub> + b = 0</span>, which can only draw <strong>one straight line</strong>. Test how one straight line separates Dataset A (100%), gets trapped at <strong>75% max on XOR</strong>, and how adding a <strong>2-neuron hidden layer</strong> bends the decision region to solve XOR (100%).</p>
+      <div class="eyebrow">Simulation 03 · Geometry &amp; Hidden Layers</div>
+      <h2>Decision Boundary &amp; The XOR Problem</h2>
+      <p class="lede">One neuron draws a single line (max 75% on XOR). Two hidden neurons slice a band to solve XOR (100%).</p>
 
       <div class="preset-bar">
-        <button type="button" id="ds-linear" class="active">Dataset A: Linearly Separable Classes</button>
-        <button type="button" id="ds-xor">Dataset B: The XOR Problem (Impossible for 1 Neuron)</button>
+        <button type="button" id="ds-linear" class="active">Dataset A: Linearly Separable</button>
+        <button type="button" id="ds-xor">Dataset B: XOR Problem</button>
+        <span style="width:16px;"></span>
+        <button type="button" id="arch-single" class="active">1 Neuron (1 Straight Line)</button>
+        <button type="button" id="arch-mlp">2-Layer Net (2 Hidden Neurons)</button>
       </div>
 
-      <div class="sim-grid">
-        <div>
-          <div class="panel-box">
-            <h3>1. Choose Model Architecture</h3>
-            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
-              <button type="button" id="arch-single" class="active" style="text-align:left;">Mode 1: Single Neuron (Draws 1 Straight Line)</button>
-              <button type="button" id="arch-mlp" style="text-align:left;">Mode 2: 2-Layer Network (2 Hidden Neurons Solve XOR!)</button>
-            </div>
-          </div>
+      <div class="sim-stack">
+        <!-- Large Graph First -->
+        <div class="canvas-wrap">
+          <canvas id="geo-canvas" width="960" height="480" style="width:100%; height:auto; display:block;"></canvas>
+        </div>
 
-          <div class="panel-box" id="single-line-controls" style="margin-top:20px;">
-            <h3>2. Single-Neuron Line Controls (w<sub>1</sub>x<sub>1</sub> + w<sub>2</sub>x<sub>2</sub> + b = 0)</h3>
+        <div class="stat-strip">
+          <div class="stat-cell">
+            <span class="label">Boundary Shape</span>
+            <span class="val" id="geo-slope" style="font-size:18px;">1 Line (slope -1.25)</span>
+            <span class="sub">w1·x1 + w2·x2 + b = 0</span>
+          </div>
+          <div class="stat-cell">
+            <span class="label">Origin Distance</span>
+            <span class="val" id="geo-dist" style="font-size:18px;">5.08 units</span>
+            <span class="sub">|b| / ||w||</span>
+          </div>
+          <div class="stat-cell">
+            <span class="label">Accuracy</span>
+            <span class="val" id="geo-acc" style="font-size:18px;">12 / 12 (100%)</span>
+            <span class="sub">Yellow ring = misclassified</span>
+          </div>
+          <div class="stat-cell">
+            <span class="label">Takeaway</span>
+            <span class="val" id="geo-note" style="font-size:15px;">Separates Class 0 &amp; 1</span>
+            <span class="sub">Blue = 0 · Red = 1</span>
+          </div>
+        </div>
+
+        <!-- Sliders Below Graph -->
+        <div class="controls-deck" id="single-line-controls">
+          <div class="panel-box">
+            <h3>Single-Neuron Line Sliders (w<sub>1</sub>x<sub>1</sub> + w<sub>2</sub>x<sub>2</sub> + b = 0)</h3>
             <div class="control">
               <label for="gw1">Weight w<sub>1</sub></label>
               <input id="gw1" type="range" min="-4" max="4" step="0.05" value="1.0">
@@ -322,161 +327,99 @@
               <output id="gb-val">-6.50</output>
             </div>
           </div>
-
-          <div class="panel-box" style="margin-top:20px;">
-            <h3>3. Geometric Readout</h3>
-            <table class="hw-table">
-              <tbody>
-                <tr>
-                  <th>Boundary Shape</th>
-                  <td class="mono" id="geo-slope">1 Line (slope -1.25)</td>
-                </tr>
-                <tr>
-                  <th>Origin Distance |b|/||w||</th>
-                  <td class="mono" id="geo-dist">5.08 units</td>
-                </tr>
-                <tr>
-                  <th>Points Classified Right</th>
-                  <td class="mono" id="geo-acc">12 / 12 (100%)</td>
-                </tr>
-                <tr>
-                  <th>XOR Takeaway</th>
-                  <td id="geo-note" style="font-size:12.5px;">1 line cleanly separates Class 0 from Class 1.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div>
-          <div class="canvas-wrap">
-            <canvas id="geo-canvas" width="640" height="420" style="width:100%; height:auto; display:block;"></canvas>
-          </div>
-          <p class="muted" style="font-size:13px; margin:8px 0 0;">
-            <strong>Legend:</strong> Hollow blue circles (<span class="mono">y = 0</span>) = Class 0. Solid red triangles (<span class="mono">y = 1</span>) = Class 1. Yellow ring = misclassified point. Solid line = decision boundary <span class="mono">z = 0</span>; blue arrow = weight vector <span class="mono">w = [w<sub>1</sub>, w<sub>2</sub>]<sup>T</sup></span> pointing into the <span class="mono">z &gt; 0</span> side.
-          </p>
         </div>
       </div>
     </section>
 
     <!-- ==================== SIMULATION 4: HOW AI LEARNS (LOSS, BACKPROP & HARDWARE BURDEN) ==================== -->
     <section class="block" id="sim-learning">
-      <div class="eyebrow">Simulation 04 · Loss Functions, Backpropagation &amp; Why We Focus on Inference</div>
-      <h2>How AI Learns: Gradient Descent vs. Frozen Inference</h2>
-      <p class="lede">To train a neuron, we measure how wrong its prediction <span class="mono">y&#770;</span> is using a <strong>Loss Function</strong>, compute partial derivatives <span class="mono">&part;L/&part;w</span> via the chain rule (<strong>Backpropagation</strong>), and nudge weights opposite the slope: <span class="mono">w &larr; w - &eta;(&part;L/&part;w)</span>. Run live training steps below—and see why running training on an FPGA is a massive headache compared to inference.</p>
+      <div class="eyebrow">Simulation 04 · Backpropagation vs. Inference</div>
+      <h2>How AI Learns: Gradient Descent</h2>
+      <p class="lede">Measure loss <span class="mono">L</span>, compute gradients <span class="mono">&part;L/&part;w</span>, and update weights: <span class="mono">w &larr; w - &eta;(&part;L/&part;w)</span>.</p>
 
-      <div class="sim-grid">
-        <div>
+      <div class="sim-stack">
+        <!-- Large Dual-Panel Graph First: Live Boundary + Cost Curve -->
+        <div class="canvas-wrap">
+          <canvas id="learn-canvas" width="960" height="420" style="width:100%; height:auto; display:block;"></canvas>
+        </div>
+
+        <div class="stat-strip">
+          <div class="stat-cell">
+            <span class="label">Training Step</span>
+            <span class="val" id="tr-epoch">Epoch 0</span>
+            <span class="sub" id="tr-weights">w=[+0.50, +0.10], b=+0.00</span>
+          </div>
+          <div class="stat-cell">
+            <span class="label">Dataset Cost J</span>
+            <span class="val" id="tr-cost">1.842</span>
+            <span class="sub" id="tr-loss">Sample L = 2.303</span>
+          </div>
+          <div class="stat-cell">
+            <span class="label">Accuracy</span>
+            <span class="val" id="tr-acc">25%</span>
+            <span class="sub" id="tr-acc-sub">3 / 12 points right</span>
+          </div>
+          <div class="stat-cell">
+            <span class="label">Error Signal &delta; = &part;L/&part;z</span>
+            <span class="val" id="tr-delta">+0.900</span>
+            <span class="sub" id="tr-grads">&part;w1=+3.60, &part;w2=+1.80</span>
+          </div>
+        </div>
+
+        <!-- Sliders & Controls Below Graph -->
+        <div class="controls-deck">
           <div class="panel-box">
-            <h3>1. Choose Loss Function</h3>
-            <div style="display:flex; gap:8px; margin-bottom:10px;">
+            <h3>1. Loss Function &amp; Learning Rate Slider</h3>
+            <div style="display:flex; gap:10px; margin-bottom:14px;">
               <button type="button" class="loss-btn active" data-loss="bce">Binary Cross-Entropy (BCE)</button>
               <button type="button" class="loss-btn" data-loss="mse">Squared Error (MSE)</button>
             </div>
-            <p id="loss-formula-note" class="muted" style="font-size:13px; margin:0;">
-              <strong>BCE + Sigmoid:</strong> The derivative <span class="mono">y&#770;(1 - y&#770;)</span> cancels out! Error signal is simply <span class="mono">&delta; = y&#770; - y</span>, giving strong gradients when wrong.
-            </p>
-          </div>
-
-          <div class="panel-box" style="margin-top:20px;">
-            <h3>2. Learning Rate &amp; Training Controls</h3>
             <div class="control">
               <label for="learn-lr">Learning Rate &eta;</label>
               <input id="learn-lr" type="range" min="0.05" max="1.0" step="0.05" value="0.25">
               <output id="learn-lr-val">0.25</output>
             </div>
-            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:16px;">
               <button type="button" id="btn-step1" class="primary">1 Backprop Step</button>
               <button type="button" id="btn-step25">Train 25 Epochs</button>
-              <button type="button" id="btn-reset-bad">Reset to Bad Weights</button>
+              <button type="button" id="btn-reset-bad">Reset Weights</button>
             </div>
           </div>
 
-          <div class="panel-box" style="margin-top:20px;">
-            <h3>3. Live Sample Backprop Trace (x = [4.0, 2.0], y = 0)</h3>
+          <div class="panel-box">
+            <h3>2. Why We Build Inference on FPGA</h3>
             <table class="hw-table">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Inference (FPGA)</th>
+                  <th>Training (Cloud GPU)</th>
+                </tr>
+              </thead>
               <tbody>
                 <tr>
-                  <th>Forward Prediction y&#770;</th>
-                  <td class="mono" id="tr-yhat">0.900 (Wrong!)</td>
+                  <td><strong>Passes</strong></td>
+                  <td>Forward only (<span class="mono">x &rarr; y&#770;</span>)</td>
+                  <td>Forward + Backward (~3&times;)</td>
                 </tr>
                 <tr>
-                  <th>Sample Loss L(y, y&#770;)</th>
-                  <td class="mono" id="tr-loss">2.303</td>
+                  <td><strong>Activations</strong></td>
+                  <td>Streamed &amp; discarded</td>
+                  <td>Saved in huge DRAM</td>
                 </tr>
                 <tr>
-                  <th>Error Signal &delta; = &part;L/&part;z</th>
-                  <td class="mono" id="tr-delta">+0.900</td>
+                  <td><strong>Weights</strong></td>
+                  <td>Frozen in on-chip ROM</td>
+                  <td>Updated every step</td>
                 </tr>
                 <tr>
-                  <th>Gradients (&part;L/&part;w<sub>1</sub>, &part;L/&part;w<sub>2</sub>, &part;L/&part;b)</th>
-                  <td class="mono" id="tr-grads">+3.60, +1.80, +0.90</td>
-                </tr>
-                <tr>
-                  <th>Updated (w<sub>1</sub>, w<sub>2</sub>, b)</th>
-                  <td class="mono" id="tr-weights">w1=+0.50, w2=+0.10, b=+0.00</td>
+                  <td><strong>Precision</strong></td>
+                  <td>8 / 16-bit fixed-point</td>
+                  <td>32 / 16-bit floating-point</td>
                 </tr>
               </tbody>
             </table>
           </div>
-        </div>
-
-        <div>
-          <div class="stat-strip" style="margin-top:0;">
-            <div class="stat-cell">
-              <span class="label">Training Step</span>
-              <span class="val" id="tr-epoch">Epoch 0</span>
-              <span class="sub">Click buttons to train</span>
-            </div>
-            <div class="stat-cell">
-              <span class="label">Dataset Cost J</span>
-              <span class="val" id="tr-cost">1.842</span>
-              <span class="sub">Average loss across points</span>
-            </div>
-            <div class="stat-cell">
-              <span class="label">Classification Acc</span>
-              <span class="val" id="tr-acc">25%</span>
-              <span class="sub" id="tr-acc-sub">3 / 12 points right</span>
-            </div>
-            <div class="stat-cell">
-              <span class="label">Current Weights</span>
-              <span class="val" id="tr-w-summary" style="font-size:14px;">[+0.50, +0.10]</span>
-              <span class="sub" id="tr-b-summary">Bias b = +0.00</span>
-            </div>
-          </div>
-
-          <h3 style="margin-top:20px;">Why Our Committee Builds Inference Hardware (And Why Training on an FPGA Is a Headache)</h3>
-          <table class="hw-table">
-            <thead>
-              <tr>
-                <th>Requirement</th>
-                <th>Inference (Our Focus on FPGA)</th>
-                <th>Training (Done in Cloud / GPUs)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Computation Direction</strong></td>
-                <td><strong>Forward pass only</strong> (<span class="mono">x &rarr; y&#770;</span>). Clean streaming pipeline.</td>
-                <td>Forward pass + <strong>Backward pass</strong> + Weight update (~3&times; compute).</td>
-              </tr>
-              <tr>
-                <td><strong>Intermediate Activations</strong></td>
-                <td>Discarded immediately as soon as the next layer consumes them.</td>
-                <td><strong>Must save every layer's activations</strong> in massive memory until backprop reaches them!</td>
-              </tr>
-              <tr>
-                <td><strong>Weights Memory</strong></td>
-                <td><strong>Completely frozen</strong> (Read-Only constants in on-chip BRAM/ROM).</td>
-                <td>Constantly rewritten every batch; must also store gradient &amp; optimizer buffers.</td>
-              </tr>
-              <tr>
-                <td><strong>Number Precision</strong></td>
-                <td>Compact <strong>8-bit or 16-bit fixed-point integers</strong> work great.</td>
-                <td>Requires high-dynamic-range floating-point (FP32 / BF16) so tiny gradients don't vanish to zero.</td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </div>
     </section>
