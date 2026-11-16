@@ -15,9 +15,7 @@ window.HFAI_SESSIONS = [
   { num: 5, released: false },
   { num: 6, released: false },
   { num: 7, released: false },
-  { num: 8, released: false },
-  { num: 9, released: false },
-  { num: 10, released: false }
+  { num: 8, released: false }
 ];
 
 (function renderSessions() {

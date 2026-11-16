@@ -42,7 +42,7 @@
       <div class="sim-stack">
         <!-- Large Graph First -->
         <div class="svg-wrap">
-          <svg id="network-svg" viewBox="0 0 920 390" width="100%" height="auto" aria-label="Multi-layer neural network graph">
+          <svg id="network-svg" viewBox="0 0 920 390" style="width:100%; height:auto; display:block;" aria-label="Multi-layer neural network graph">
             <!-- Layer Column Headers -->
             <g font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#64748B" text-anchor="middle">
               <text x="130" y="28">INPUT LAYER (2)</text>
@@ -171,12 +171,12 @@
             </div>
             <div class="control">
               <label for="net-w1" id="lbl-net-w1">Weight w<sub>11</sub></label>
-              <input id="net-w1" type="range" min="-3" max="3" step="0.1" value="1.0">
+              <input id="net-w1" type="range" min="-4" max="4" step="0.1" value="1.0">
               <output id="net-w1-val">1.0</output>
             </div>
             <div class="control">
               <label for="net-w2" id="lbl-net-w2">Weight w<sub>12</sub></label>
-              <input id="net-w2" type="range" min="-3" max="3" step="0.1" value="0.5">
+              <input id="net-w2" type="range" min="-4" max="4" step="0.1" value="0.5">
               <output id="net-w2-val">0.5</output>
             </div>
             <div class="control">

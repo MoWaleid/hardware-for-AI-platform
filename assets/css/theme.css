@@ -347,6 +347,8 @@ button.active, .preset-bar button.active {
 @media (max-width: 720px) {
   .sessions .row { grid-template-columns: 44px 1fr; }
   .sessions .state { grid-column: 2; }
-  .topbar nav { gap: 12px; font-size: 13px; }
+  .topbar { flex-wrap: wrap; row-gap: 8px; }
+  .topbar nav { gap: 12px; font-size: 13px; margin-left: 0; width: 100%; overflow-x: auto; white-space: nowrap; }
+  .topbar nav a { flex-shrink: 0; }
   .control { grid-template-columns: 120px 1fr 66px; font-size: 15px; }
 }

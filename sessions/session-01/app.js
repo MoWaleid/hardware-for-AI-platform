@@ -349,7 +349,7 @@
     colCtx.textAlign = "left";
     colCtx.fillText(
       currentColAct === "linear"
-        ? "Red Line: 2-Layer Linear Net Collapses to 1 Line (y = " + fmtSigned(wEff, 2) + "x " + fmtSigned(bEff, 2) + ")"
+        ? "Red Line: 2-Layer Linear Net Collapses to 1 Line (y = " + wEff.toFixed(2) + "x " + (bEff >= 0 ? "+ " : "− ") + Math.abs(bEff).toFixed(2) + ")"
         : "Blue Curve: 2-Layer Net with " + currentColAct.toUpperCase() + "   |   Dashed Gray: Collapsed Linear Line",
       padL,
       28
@@ -594,7 +594,10 @@
     if (archMode === "mlp") {
       document.getElementById("geo-slope").textContent = "2 Parallel Lines";
       document.getElementById("geo-dist").textContent  = "Band between h1 & h2";
-      document.getElementById("geo-note").textContent  = "2 Hidden Neurons Solve XOR!";
+      document.getElementById("geo-note").textContent  =
+        activeDatasetName === "xor"
+          ? "2 Hidden Neurons Solve XOR!"
+          : "Band is set for XOR, not this data";
     } else {
       const slopeStr = Math.abs(w2) > 1e-4 ? "1 Line (slope " + (-w1 / w2).toFixed(2) + ")" : "1 Vertical Line";
       const distStr = norm > 1e-4 ? (Math.abs(b) / norm).toFixed(2) + " units" : "inf";
@@ -615,6 +618,7 @@
         archMode = "single";
         document.getElementById("arch-single").classList.add("active");
         document.getElementById("arch-mlp").classList.remove("active");
+        document.getElementById("single-line-controls").style.opacity = "1";
       }
       renderGeometry();
     });
@@ -865,7 +869,7 @@
     document.getElementById("tr-acc-sub").textContent = metrics.right + " / " + linearData.length + " points right";
     document.getElementById("tr-delta").textContent = fmtSigned(sDelta, 3);
     document.getElementById("tr-grads").textContent =
-      "dw1=" + fmtSigned(dw1, 2) + ", dw2=" + fmtSigned(dw2, 2);
+      "∂w1=" + fmtSigned(dw1, 2) + ", ∂w2=" + fmtSigned(dw2, 2);
 
     renderLearningCanvas();
   }
