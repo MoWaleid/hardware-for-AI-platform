@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Session 02 — From Layers to Convolution · Hardware for AI</title>
+  <link rel="icon" href="../../assets/img/ieee-guc-logo.png">
+  <link rel="stylesheet" href="../../assets/css/theme.css">
+  <style>
+    /* ---------- shared bits for this module ---------- */
+    .row-flex { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; }
+    .col-title { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .bracket { display: grid; gap: 6px; padding: 6px 14px; border-left: 3px solid var(--ink); border-right: 3px solid var(--ink); border-radius: 4px; }
+    .vlabel { font-family: Cambria, Georgia, serif; font-style: italic; font-weight: 700; color: var(--blue); font-size: 22px; text-align: center; margin-bottom: 4px; }
+    .op { font-size: 26px; color: var(--muted); }
+    .num-in { width: 64px; height: 42px; text-align: center; font-family: var(--mono); font-size: 17px; font-weight: 700;
+              border: 1.5px solid #CBD5E1; border-radius: 6px; background: #fff; color: var(--ink); }
+    .num-in:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
+    .num-out { width: 76px; height: 42px; display: flex; align-items: center; justify-content: center; font-family: var(--mono);
+               font-size: 17px; font-weight: 700; border-radius: 6px; background: #fff; border: 1.5px dashed #CBD5E1; color: #94A3B8; }
+    .num-out.done { border-style: solid; border-color: var(--blue); color: var(--blue); background: var(--blue-soft); }
+    .hot { outline: 3px solid var(--blue); outline-offset: 1px; background: var(--blue-soft) !important; }
+    .row-sel { background: var(--blue-soft); border-radius: 6px; }
+    .workline { font-family: var(--mono); font-size: 18px; min-height: 30px; padding: 10px 14px; background: #fff;
+                border: 1px solid var(--line); border-radius: 6px; margin-top: 16px; }
+    .workline .term { color: var(--ink); }
+    .workline .new { color: var(--blue); font-weight: 700; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 12px; }
+    .size-in { width: 100%; font-family: var(--mono); font-size: 16px; padding: 8px 10px; border: 1.5px solid #CBD5E1; border-radius: 6px; }
+
+    /* ---------- convolution grids ---------- */
+    .grid { display: grid; gap: 2px; }
+    .px { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-family: var(--mono);
+          font-size: 11px; border: 1px solid #E2E8F0; border-radius: 3px; cursor: default; }
+    .px.pad { background: #F1F5F9; color: #94A3B8; }
+    .px.win { outline: 2.5px solid var(--blue); outline-offset: -1px; }
+    .px.out { cursor: pointer; }
+    .px.out.cur { outline: 2.5px solid var(--blue); outline-offset: -1px; }
+    .px.out.empty { background: #fff; color: #CBD5E1; }
+    .kin { width: 54px; height: 46px; }
+    .prod-list { font-family: var(--mono); font-size: 15px; line-height: 1.75; white-space: pre; margin: 0; }
+    .prod-list .cur { color: var(--blue); font-weight: 700; }
+    .pipe { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-family: var(--mono); font-size: 16px; margin-top: 6px; }
+    .pipe .stage { border: 1.5px solid var(--ink); border-radius: 6px; padding: 6px 10px; text-align: center; min-width: 92px; background: #fff; }
+    .pipe .stage small { display: block; font-family: var(--sans); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+    .pipe .stage.final { border-color: var(--blue); color: var(--blue); font-weight: 700; background: var(--blue-soft); }
+    .pipe .arrow { color: var(--muted); }
+    .toggle { display: flex; align-items: center; gap: 10px; font-weight: 600; margin: 8px 0; }
+    .toggle input { width: 20px; height: 20px; accent-color: var(--blue); }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <img src="../../assets/img/ieee-guc-logo.png" alt="IEEE GUC Student Branch">
+    <div class="brand">Hardware for AI<small>Session 02 · Interactive Lab</small></div>
+    <nav>
+      <a href="#sim-matrix">1. Layer as a Matrix</a>
+      <a href="#sim-conv">2. Convolution</a>
+      <a href="../../">&larr; All sessions</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">Session 02 · Interactive Lab</div>
+      <h1>From layers to convolution</h1>
+      <p>Step through every multiply-accumulate yourself: first a whole layer, then a small kernel sliding over an image.</p>
+    </section>
+
+    <!-- ==================== SIMULATION 1: A LAYER AS A MATRIX ==================== -->
+    <section class="block" id="sim-matrix">
+      <div class="eyebrow">Simulation 01 · A Layer as a Matrix</div>
+      <h2>Each row of W is one neuron</h2>
+      <p class="lede">Pick a neuron, then press <b>Next MAC</b>: each step multiplies one weight by one input and adds it to the running sum. Edit any number and watch the result change.</p>
+
+      <div class="preset-bar" id="m-presets">
+        <button type="button" data-preset="slides" class="active">Slides example</button>
+        <button type="button" data-preset="random">Random numbers</button>
+      </div>
+
+      <div class="sim-stack">
+        <div class="svg-wrap">
+          <div class="row-flex" style="gap:22px; align-items:flex-end;">
+            <div><div class="vlabel">W</div><div class="bracket" id="m-W" style="grid-template-columns: repeat(3, 64px);"></div></div>
+            <div><div class="vlabel">x</div><div class="bracket" id="m-x"></div></div>
+            <span class="op" style="padding-bottom:40px;">+</span>
+            <div><div class="vlabel">b</div><div class="bracket" id="m-b"></div></div>
+            <span class="op" style="padding-bottom:40px;">=</span>
+            <div><div class="vlabel">z</div><div class="bracket" id="m-z"></div></div>
+            <span class="op" style="padding-bottom:40px; font-size:16px;">ReLU &rarr;</span>
+            <div><div class="vlabel">a</div><div class="bracket" id="m-a"></div></div>
+          </div>
+          <div class="workline" id="m-work"></div>
+        </div>
+
+        <div class="stat-strip">
+          <div class="stat-cell"><span class="label">Selected</span><span class="val" id="m-sel">Neuron 1</span><span class="sub" id="m-sel-sub">row 1 of W</span></div>
+          <div class="stat-cell"><span class="label">Running sum</span><span class="val" id="m-acc">—</span><span class="sub" id="m-acc-sub">starts at the bias</span></div>
+          <div class="stat-cell"><span class="label">MACs done</span><span class="val" id="m-macs">0 / 6</span><span class="sub">rows × columns</span></div>
+          <div class="stat-cell"><span class="label">Output a = ReLU(z)</span><span class="val" id="m-out">—</span><span class="sub" id="m-out-sub">&nbsp;</span></div>
+        </div>
+
+        <div class="controls-deck">
+          <div class="panel-box">
+            <h3>1. Step through the layer</h3>
+            <div class="btn-row" id="m-rows"></div>
+            <div class="btn-row">
+              <button type="button" class="primary" id="m-next">Next MAC</button>
+              <button type="button" id="m-finish">Finish this row</button>
+              <button type="button" id="m-all">Whole layer</button>
+              <button type="button" id="m-reset">Reset</button>
+            </div>
+          </div>
+          <div class="panel-box">
+            <h3>2. Count the MACs of a network</h3>
+            <div class="btn-row">
+              <button type="button" data-net="3,3,2" class="net-btn active">3 → 3 → 2</button>
+              <button type="button" data-net="784,128,10" class="net-btn">784 → 128 → 10</button>
+            </div>
+            <input class="size-in" id="m-net" value="3, 3, 2" aria-label="Layer sizes, separated by commas">
+            <table class="hw-table" id="m-net-table"></table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SIMULATION 2: CONVOLUTION ==================== -->
+    <section class="block" id="sim-conv">
+      <div class="eyebrow">Simulation 02 · Convolution</div>
+      <h2>One small kernel, reused at every pixel</h2>
+      <p class="lede">The 3 × 3 window slides over the image. At each position: nine multiplies, one sum, then post-processing turns the sum into a pixel (0 to 255). Edit any kernel weight: predict the new output first, then check.</p>
+
+      <div class="preset-bar" id="c-kernels">
+        <button type="button" data-k="sobel" class="active">Sobel (edges)</button>
+        <button type="button" data-k="blur">Blur</button>
+        <button type="button" data-k="sharpen">Sharpen</button>
+      </div>
+      <div class="preset-bar" id="c-images">
+        <button type="button" data-img="seven" class="active">Image: handwritten 7</button>
+        <button type="button" data-img="patch">Image: the patch from the slides</button>
+        <button type="button" id="c-pad" class="active">Zero padding: on</button>
+      </div>
+
+      <div class="sim-stack">
+        <div class="svg-wrap">
+          <div class="row-flex" style="align-items:flex-start; gap:34px;">
+            <div><div class="col-title" id="c-in-title">Input</div><div class="grid" id="c-in"></div></div>
+            <div><div class="col-title">Kernel (9 weights)</div><div class="grid" id="c-k" style="grid-template-columns: repeat(3, 54px);"></div></div>
+            <div><div class="col-title" id="c-out-title">Output</div><div class="grid" id="c-out"></div></div>
+          </div>
+        </div>
+
+        <div class="stat-strip">
+          <div class="stat-cell"><span class="label">Window</span><span class="val" id="c-pos">(1, 1)</span><span class="sub">click any output pixel</span></div>
+          <div class="stat-cell"><span class="label">Raw sum</span><span class="val" id="c-raw">—</span><span class="sub">9 products added</span></div>
+          <div class="stat-cell"><span class="label">Output pixel</span><span class="val" id="c-pix">—</span><span class="sub">after post-processing</span></div>
+          <div class="stat-cell"><span class="label">MACs so far</span><span class="val" id="c-macs">0</span><span class="sub" id="c-macs-sub">9 per output pixel</span></div>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" id="c-prev">Previous window</button>
+          <button type="button" class="primary" id="c-next">Next window</button>
+          <button type="button" id="c-auto">Auto-play</button>
+          <button type="button" id="c-fill">Fill the whole output</button>
+          <button type="button" id="c-clear">Clear output</button>
+        </div>
+
+        <div class="controls-deck">
+          <div class="panel-box">
+            <h3>1. Multiply and accumulate</h3>
+            <pre class="prod-list" id="c-prods"></pre>
+          </div>
+          <div class="panel-box">
+            <h3>2. Post-processing</h3>
+            <label class="toggle"><input type="checkbox" id="c-abs"> Absolute value first</label>
+            <div class="control">
+              <label for="c-shift">Right shift</label>
+              <input id="c-shift" type="range" min="0" max="4" step="1" value="0">
+              <output id="c-shift-val">0</output>
+            </div>
+            <div class="pipe" id="c-pipe"></div>
+            <p class="muted" style="font-size:14px; margin:12px 0 0;">Integers only: <span class="mono">&gt;&gt;</span> rounds down, then clamp keeps 0 to 255.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><span>IEEE GUC Student Branch · Hardware for AI</span><span>Session 02</span></footer>
+  <script src="../../assets/js/sessions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

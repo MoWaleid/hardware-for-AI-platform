@@ -9,7 +9,13 @@ window.HFAI_SESSIONS = [
     desc: "Network graphs, the forward pass, activations, the XOR limit, and how backpropagation trains weights.",
     href: "sessions/session-01/"
   },
-  { num: 2, released: false },
+  {
+    num: 2,
+    released: true,
+    title: "From layers to convolution",
+    desc: "A layer as a matrix, MAC by MAC, then a 3 × 3 kernel sliding over an image: padding, Sobel, blur, and post-processing.",
+    href: "sessions/session-02/"
+  },
   { num: 3, released: false },
   { num: 4, released: false },
   { num: 5, released: false },
